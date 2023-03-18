@@ -226,7 +226,7 @@ class Manager {
 								c.setName(temp);
 								break;
 							case 1:
-								std::cin.ignore();
+								if (std::cin) std::cin.ignore(100,'\n');
 								Cursor::set(40, 10 + y);
 								getline(std::cin, temp);
 								c.setDesc(temp);

@@ -226,10 +226,11 @@ class Manager {
 								c.setName(temp);
 								break;
 							case 1:
-								Cursor::set(40, 10 + y);
 								std::cin.ignore();
+								Cursor::set(40, 10 + y);
 								getline(std::cin, temp);
 								c.setDesc(temp);
+								//std::cin.ignore();
 								break;
 							case 2:
 								Cursor::set(40, 10 + y);
@@ -443,4 +444,3 @@ class Manager {
 			system("pause");
 		}
 };
-	

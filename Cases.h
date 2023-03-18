@@ -79,16 +79,18 @@ class Date {
 
 class Case {
 	private:
-		short priority;
+		std::string tag;
 		std::string name;
 		std::string description;
+		int priority;
 		Date date;
 		Time time;
 	public:
-		Case(short priority, std::string name, std::string description, Date date, Time time) :
-			priority{ priority }, name{ name }, description{ description }, date{ date }, time{ time } {}
-		Case() : Case(0, "", "", Date(), Time() ) {}
+		Case(std::string tag, std::string name, std::string description, int priority, Date date, Time time) :
+			tag{tag}, name {name}, description{ description }, priority{ priority }, date{ date }, time{ time } {}
+		Case() : Case("", "", "", 0, Date(), Time() ) {}
 		friend void operator>>(std::istream& in, Case& c) {
+			in >> c.tag;
 			in >> c.name;
 			in.ignore();
 			getline(in, c.description);
@@ -97,8 +99,8 @@ class Case {
 			in >> c.date;
 			in >> c.time;
 		}
-		short getPrior() const {
-			return priority;
+		std::string getTag() const {
+			return tag;
 		}
 		std::string getName() const {
 			return name;
@@ -106,20 +108,26 @@ class Case {
 		std::string getDesc() const {
 			return description;
 		}
+		int getPrior() const {
+			return priority;
+		}
 		Date getDate() const {
 			return date;
 		}
 		Time getTime() const {
 			return time;
 		}
-		void setPrior(int prior) {
-			this->priority = prior;
+		void setTag(std::string tag) {
+			this->tag = tag;
 		}
 		void setName(std::string name) {
 			this->name = name;
 		}
 		void setDesc(std::string desc) {
 			this->description = desc;
+		}
+		void setPrior(int prior) {
+			this->priority = prior;
 		}
 		void setDate(Date date) {
 			this->date = date;
@@ -140,6 +148,8 @@ class Manager {
 		Manager(char bg, char fg) : bg_color{ bg }, fg_color{ fg } {}
 		void show_menu(int cursor_pos) {
 			system("cls");
+			Cursor::set(16, 8);
+			std::cout << "Menu";
 			Cursor::set(18, 10 + cursor_pos);
 			std::cout << Cursor::symbol << ' ';
 			Cursor::set(20, 10);
@@ -160,10 +170,12 @@ class Manager {
 		}
 		void show_addCase_menu(int cursor_pos, Case& c) {
 			system("cls");
+			Cursor::set(16, 8);
+			std::cout << "Add Case";
 			Cursor::set(18, 10 + cursor_pos);
 			std::cout << Cursor::symbol << ' ';
 			Cursor::set(20, 10);
-			std::cout << "Name:\t\t\t" << c.getName();
+			std::cout << "Name:\t\t" << c.getName();
 			Cursor::set(20, 11);
 			std::cout << "Description:\t" << c.getDesc();
 			Cursor::set(20, 12);
@@ -173,8 +185,10 @@ class Manager {
 			Cursor::set(20, 14);
 			std::cout << "Time:\t\t" << c.getTime();
 			Cursor::set(20, 15);
+			std::cout << "Tag:\t\t" << c.getTag();
+			Cursor::set(20, 16);
 			std::cout << "Submit";
-			Cursor::set(20, 17);
+			Cursor::set(20, 18);
 			std::cout << "B - to return";
 			Cursor::set(0, 0);
 		}
@@ -193,7 +207,6 @@ class Manager {
 			std::string temp;
 			int temp_int;
 			while (true) {
-				//std::cin.clear();
 				x = 0;
 				choice = _getch();
 				switch (choice) {
@@ -203,7 +216,7 @@ class Manager {
 						break;
 					case 's':
 					case 'S':
-						if (y < 5) x = 1;
+						if (y < 6) x = 1;
 						break;
 					case ' ':
 						switch (y) {
@@ -214,14 +227,15 @@ class Manager {
 								break;
 							case 1:
 								Cursor::set(40, 10 + y);
+								std::cin.ignore();
 								getline(std::cin, temp);
 								c.setDesc(temp);
-								std::cin.ignore();
 								break;
 							case 2:
 								Cursor::set(40, 10 + y);
 								std::cin >> temp_int;
 								c.setPrior(temp_int);
+								std::cin.clear(); 
 								break;
 							case 3:
 								Cursor::set(40, 10 + y);
@@ -250,9 +264,16 @@ class Manager {
 								c.setTime(t);
 								break;
 							case 5:
+								Cursor::set(40, 10 + y);
+								std::cin >> temp;
+								c.setTag(temp);
+								break;
+							case 6:
 								cases.push_back(c);
 								return;
 						}
+						std::cin.clear();
+						show_addCase_menu(y, c);
 						Cursor::set(0, 0);
 						break;
 					case 'b':
@@ -264,6 +285,8 @@ class Manager {
 		}
 		void show_changeColor_menu(int cursor_pos) {
 			system("cls");
+			Cursor::set(16, 8);
+			std::cout << "Change Color";
 			Cursor::set(18, 10 + cursor_pos);
 			std::cout << Cursor::symbol << ' ';
 			Cursor::set(20, 10);
@@ -398,6 +421,7 @@ class Manager {
 
 			data << cases.size() << std::endl;
 			for (auto& i : cases) {
+				data << i.getTag() << std::endl;
 				data << i.getName() << std::endl;
 				data << i.getDesc() << std::endl;
 				data << i.getPrior() << std::endl;
@@ -407,13 +431,13 @@ class Manager {
 		}
 		void show() {
 			system("cls");
-			for (auto c = cases.begin(); c != cases.end(); c++) {
-				std::cout << "~INDEX~\t\t\t" << distance(cases.begin(), c) << std::endl;
-				std::cout << "Name:\t\t\t" << c->getName() << std::endl;
-				std::cout << "Description:\t\t" << c->getDesc() << std::endl;
-				std::cout << "Priority:\t\t" << c->getPrior() << std::endl;
-				std::cout << "Date:\t\t\t" << c->getDate() << std::endl;
-				std::cout << "Time:\t\t\t" << c->getTime() << std::endl;
+			for (Case& c : cases) {	
+				std::cout << "Name:\t\t\t" << c.getName() << std::endl;
+				std::cout << "Description:\t\t" << c.getDesc() << std::endl;
+				std::cout << "Priority:\t\t" << c.getPrior() << std::endl;
+				std::cout << "Date:\t\t\t" << c.getDate() << std::endl;
+				std::cout << "Time:\t\t\t" << c.getTime() << std::endl;
+				std::cout << "~Tag\t\t\t" << c.getTag() << std::endl;
 				std::cout << "--------------------------------------------------\n";
 			}
 			system("pause");

@@ -193,7 +193,7 @@ class Manager {
 			std::string temp;
 			int temp_int;
 			while (true) {
-				std::cin.clear();
+				//std::cin.clear();
 				x = 0;
 				choice = _getch();
 				switch (choice) {
@@ -216,6 +216,7 @@ class Manager {
 								Cursor::set(40, 10 + y);
 								getline(std::cin, temp);
 								c.setDesc(temp);
+								std::cin.ignore();
 								break;
 							case 2:
 								Cursor::set(40, 10 + y);
@@ -406,12 +407,13 @@ class Manager {
 		}
 		void show() {
 			system("cls");
-			for (Case& c : cases) {
-				std::cout << "Name:\t\t\t" << c.getName() << std::endl;
-				std::cout << "Description:\t\t" << c.getDesc() << std::endl;
-				std::cout << "Priority:\t\t" << c.getPrior() << std::endl;
-				std::cout << "Date:\t\t\t" << c.getDate() << std::endl;
-				std::cout << "Time:\t\t\t" << c.getTime() << std::endl;
+			for (auto c = cases.begin(); c != cases.end(); c++) {
+				std::cout << "~INDEX~\t\t\t" << distance(cases.begin(), c) << std::endl;
+				std::cout << "Name:\t\t\t" << c->getName() << std::endl;
+				std::cout << "Description:\t\t" << c->getDesc() << std::endl;
+				std::cout << "Priority:\t\t" << c->getPrior() << std::endl;
+				std::cout << "Date:\t\t\t" << c->getDate() << std::endl;
+				std::cout << "Time:\t\t\t" << c->getTime() << std::endl;
 				std::cout << "--------------------------------------------------\n";
 			}
 			system("pause");

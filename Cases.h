@@ -304,6 +304,11 @@ class Manager {
 			char cmd[]{ 'c','o','l','o','r',' ',bg_color,fg_color,'\0' };
 			system(cmd);
 		}
+		void saveColor() {
+			std::ofstream data;
+			data.open("color.txt", std::ios::out);
+			data << bg_color << "\t" << fg_color << std::endl;
+		}
 		void changeColor() {
 			char choice;
 			
@@ -345,6 +350,7 @@ class Manager {
 				if (fg_color == 'a' - 1) fg_color = '9';
 
 				setColor();
+				saveColor();
 
 				Cursor::reshow(y, x);
 			} while (choice != 'b' && choice != 'B');
@@ -403,6 +409,12 @@ class Manager {
 		}
 		void load() {
 			std::ifstream data;
+			data.open("color.txt", std::ios::in);
+
+			data >> bg_color >> fg_color;
+
+			data.close();
+
 			data.open("cases.txt", std::ios::in);
 
 			int amount;
@@ -419,7 +431,6 @@ class Manager {
 		void save() {
 			std::ofstream data;
 			data.open("cases.txt", std::ios::out);
-
 			data << cases.size() << std::endl;
 			for (auto& i : cases) {
 				data << i.getTag() << std::endl;

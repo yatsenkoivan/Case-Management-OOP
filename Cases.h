@@ -384,51 +384,36 @@ class Manager {
 			setColor();
 
 			int y = 0; //current pos
-			int x = 0; //change
 
 			menu_show(0);
 
-			char choice;
+			int move;
 			while (true) {
-				x = 0;
-				choice = _getch();
-				switch (choice) {
-					case 'w':
-					case 'W':
-						if (y > 0) x = -1;
+				move = Cursor::move(y, 6);
+				switch (move) {
+					case 0:
+						showMenu();
 						break;
-					case 's':
-					case 'S':
-						if (y < 6) x = 1;
+					case 1:
+						addCase();
+						save();
 						break;
-					case ' ':
-						switch (y) {
-							case 0:
-								showMenu();
-								break;
-							case 1:
-								addCase();
-								save();
-								break;
-							case 2:
+					case 2:
 
-								break;
-							case 3:
-
-								break;
-							case 4:
-
-								break;
-							case 5:
-								changeColor();
-								break;
-							case 6:
-								return;
-						}
-						menu_show(y);
 						break;
+					case 3:
+
+						break;
+					case 4:
+
+						break;
+					case 5:
+						changeColor();
+						break;
+					case 6:
+						return;
 				}
-				Cursor::reshow(y, x);
+				if (move >= 0) menu_show(y);
 			}
 		}
 		void load() {

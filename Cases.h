@@ -21,6 +21,27 @@ namespace Cursor {
 		std::cout << Cursor::symbol;
 		Cursor::set(0, 0);
 	}
+	int move(int& y, int max) {
+		int x = 0;
+		char choice = _getch();
+		switch (choice) {
+			case 'w':
+			case 'W':
+				if (y > 0) x = -1;
+				break;
+			case 's':
+			case 'S':
+				if (y < max) x = 1;
+				break;
+			case ' ':
+				return y;
+			case 'b':
+			case 'B':
+				return -2;
+		}
+		Cursor::reshow(y, x);
+		return -1;
+	}
 }
 
 class Time {
@@ -146,7 +167,7 @@ class Manager {
 	public:
 		Manager() : Manager('7', '0') {}
 		Manager(char bg, char fg) : bg_color{ bg }, fg_color{ fg } {}
-		void show_menu(int cursor_pos) {
+		void menu_show(int cursor_pos) {
 			system("cls");
 			Cursor::set(16, 8);
 			std::cout << "Menu";
@@ -168,7 +189,7 @@ class Manager {
 			std::cout << "Exit";
 			Cursor::set(0, 0);
 		}
-		void show_addCase_menu(int cursor_pos, Case& c) {
+		void addCaseMenu_show(int cursor_pos, Case& c) {
 			system("cls");
 			Cursor::set(16, 8);
 			std::cout << "Add Case";
@@ -200,91 +221,110 @@ class Manager {
 			Date d;
 
 			int y = 0;
-			int x = 0;
-			show_addCase_menu(0, c);
+			addCaseMenu_show(0, c);
 
-			char choice;
+			int move=0;
 			std::string temp;
 			int temp_int;
-			while (true) {
-				x = 0;
-				choice = _getch();
-				switch (choice) {
-					case 'w':
-					case 'W':
-						if (y > 0) x = -1;
+			do {
+				move = Cursor::move(y, 6);
+				switch (move) {
+					case 0:
+						Cursor::set(40, 10 + y);
+						std::cin >> temp;
+						c.setName(temp);
 						break;
-					case 's':
-					case 'S':
-						if (y < 6) x = 1;
+					case 1:
+						if (!std::cin) std::cin.ignore();
+						Cursor::set(40, 10 + y);
+						getline(std::cin, temp);
+						c.setDesc(temp);
 						break;
-					case ' ':
-						switch (y) {
-							case 0:
-								Cursor::set(40, 10 + y);
-								std::cin >> temp;
-								c.setName(temp);
-								break;
-							case 1:
-								if (std::cin) std::cin.ignore(100,'\n');
-								Cursor::set(40, 10 + y);
-								getline(std::cin, temp);
-								c.setDesc(temp);
-								//std::cin.ignore();
-								break;
-							case 2:
-								Cursor::set(40, 10 + y);
-								std::cin >> temp_int;
-								c.setPrior(temp_int);
-								std::cin.clear(); 
-								break;
-							case 3:
-								Cursor::set(40, 10 + y);
-								std::cin >> temp_int;
-								d.setDD(temp_int);
-								Cursor::set(48, 10 + y);
-								std::cin >> temp_int;
-								d.setMM(temp_int);
-								Cursor::set(56, 10 + y);
-								std::cin >> temp_int;
-								d.setYY(temp_int);
-								c.setDate(d);
-								break;
-							case 4:
-								Cursor::set(40, 10 + y);
-								std::cin >> temp_int;
-								t.setHours(temp_int);
-								std::cin.clear();
-								Cursor::set(48, 10 + y);
-								std::cin >> temp_int;
-								t.setMinutes(temp_int);
-								std::cin.clear();
-								Cursor::set(56, 10 + y);
-								std::cin >> temp_int;
-								t.setSeconds(temp_int);
-								c.setTime(t);
-								break;
-							case 5:
-								Cursor::set(40, 10 + y);
-								std::cin >> temp;
-								c.setTag(temp);
-								break;
-							case 6:
-								cases.push_back(c);
-								return;
-						}
+					case 2:
+						Cursor::set(40, 10 + y);
+						std::cin >> temp_int;
+						c.setPrior(temp_int);
+						std::cin.clear(); 
+						break;
+					case 3:
+						Cursor::set(40, 10 + y);
+						std::cin >> temp_int;
+						d.setDD(temp_int);
+						Cursor::set(48, 10 + y);
+						std::cin >> temp_int;
+						d.setMM(temp_int);
+						Cursor::set(56, 10 + y);
+						std::cin >> temp_int;
+						d.setYY(temp_int);
+						c.setDate(d);
+						break;
+					case 4:
+						Cursor::set(40, 10 + y);
+						std::cin >> temp_int;
+						t.setHours(temp_int);
 						std::cin.clear();
-						show_addCase_menu(y, c);
-						Cursor::set(0, 0);
+						Cursor::set(48, 10 + y);
+						std::cin >> temp_int;
+						t.setMinutes(temp_int);
+						std::cin.clear();
+						Cursor::set(56, 10 + y);
+						std::cin >> temp_int;
+						t.setSeconds(temp_int);
+						c.setTime(t);
 						break;
-					case 'b':
-					case 'B':
+					case 5:
+						Cursor::set(40, 10 + y);
+						std::cin >> temp;
+						c.setTag(temp);
+						break;
+					case 6:
+						cases.push_back(c);
 						return;
 				}
-				Cursor::reshow(y, x);
-			}
+				if (move >= 0){
+					std::cin.clear();
+					addCaseMenu_show(y, c);
+					Cursor::set(0, 0);
+				}
+				if (std::cin) std::cin.clear();
+			} while (move != -2);
 		}
-		void show_changeColor_menu(int cursor_pos) {
+		void showMenuSorted_show() {
+
+		}
+		void showMenu_show(int cursor_pos) {
+			system("cls");
+			Cursor::set(16, 8);
+			std::cout << "Show";
+			Cursor::set(18, 10 + cursor_pos);
+			std::cout << Cursor::symbol << ' ';
+			Cursor::set(20, 10);
+			std::cout << "Default";
+			Cursor::set(20, 11);
+			std::cout << "Sorted";
+			Cursor::set(20, 13);
+			std::cout << "B - to return";
+			Cursor::set(0, 0);
+		}
+		void showMenu() {
+			int move;
+
+			int y = 0;
+			showMenu_show(y);
+
+			do {
+				move = Cursor::move(y, 1);
+				switch (move) {
+					case 0:
+						show();
+						break;
+					case 1:
+						//showSortedMenu();
+						break;
+				}
+			} while (move == -1);
+		}
+		void changeColorMenu_show(int cursor_pos) {
 			system("cls");
 			Cursor::set(16, 8);
 			std::cout << "Change Color";
@@ -295,8 +335,6 @@ class Manager {
 			Cursor::set(20, 11);
 			std::cout << "Foreground";
 			Cursor::set(20, 13);
-			std::cout << "AD - to change";
-			Cursor::set(20, 14);
 			std::cout << "B - to return";
 			Cursor::set(0, 0);
 		}
@@ -310,35 +348,22 @@ class Manager {
 			data << bg_color << "\t" << fg_color << std::endl;
 		}
 		void changeColor() {
-			char choice;
-			
+			int move;
 			int y = 0;
-			int x = 0;
-			show_changeColor_menu(y);
+			changeColorMenu_show(y);
 
 			do {
-				x = 0;
-				choice = _getch();
-				switch (choice) {
-					case 'w':
-					case 'W':
-						if (y > 0) x = -1;
+				move = Cursor::move(y, 1);
+
+				switch (move) {
+					case 0:
+						bg_color++;
 						break;
-					case 's':
-					case 'S':
-						if (y < 1) x = 1;
-						break;
-					case 'a':
-					case 'A':
-						if (y == 0) bg_color--;
-						if (y == 1) fg_color--;
-						break;
-					case 'd':
-					case 'D':
-						if (y == 0) bg_color++;
-						if (y == 1) fg_color++;
+					case 1:
+						fg_color++;
 						break;
 				}
+
 				if (bg_color == '9' + 1) bg_color = 'a';
 				if (fg_color == '9' + 1) fg_color = 'a';
 				if (bg_color == 'f' + 1) bg_color = '0';
@@ -352,8 +377,7 @@ class Manager {
 				setColor();
 				saveColor();
 
-				Cursor::reshow(y, x);
-			} while (choice != 'b' && choice != 'B');
+			} while (move != -2);
 		}
 		void menu() {
 
@@ -362,7 +386,7 @@ class Manager {
 			int y = 0; //current pos
 			int x = 0; //change
 
-			show_menu(0);
+			menu_show(0);
 
 			char choice;
 			while (true) {
@@ -380,7 +404,7 @@ class Manager {
 					case ' ':
 						switch (y) {
 							case 0:
-								show();
+								showMenu();
 								break;
 							case 1:
 								addCase();
@@ -401,7 +425,7 @@ class Manager {
 							case 6:
 								return;
 						}
-						show_menu(y);
+						menu_show(y);
 						break;
 				}
 				Cursor::reshow(y, x);

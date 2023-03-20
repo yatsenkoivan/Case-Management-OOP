@@ -45,6 +45,20 @@ namespace Cursor {
 	}
 }
 
+namespace Errors {
+	void name_empty() {
+		Cursor::set(18, 20);
+		std::cout << "! Name cannot be empty !";
+		Cursor::set(0, 0);
+	}
+	void tag_empty() {
+		Cursor::set(18, 20);
+		std::cout << "! Tag cannot be empty !";
+		Cursor::set(0, 0);
+	}
+}
+
+
 class Time {
 	private:
 		int hours;
@@ -276,7 +290,6 @@ class Manager {
 						c.setName(temp);
 						break;
 					case 1:
-						if (!std::cin) std::cin.ignore();
 						Cursor::set(40, 10 + y);
 						getline(std::cin, temp);
 						c.setDesc(temp);
@@ -285,7 +298,6 @@ class Manager {
 						Cursor::set(40, 10 + y);
 						std::cin >> temp_int;
 						c.setPrior(temp_int);
-						std::cin.clear(); 
 						break;
 					case 3:
 						Cursor::set(40, 10 + y);
@@ -303,11 +315,9 @@ class Manager {
 						Cursor::set(40, 10 + y);
 						std::cin >> temp_int;
 						t.setHours(temp_int);
-						std::cin.clear();
 						Cursor::set(48, 10 + y);
 						std::cin >> temp_int;
 						t.setMinutes(temp_int);
-						std::cin.clear();
 						Cursor::set(56, 10 + y);
 						std::cin >> temp_int;
 						t.setSeconds(temp_int);
@@ -319,15 +329,18 @@ class Manager {
 						c.setTag(temp);
 						break;
 					case 6:
-						cases.push_back(c);
-						return;
-				}
-				if (move >= 0){
-					std::cin.clear();
+						if (c.getName() == "") Errors::name_empty();
+						else if (c.getTag() == "") Errors::tag_empty();
+						else {
+							cases.push_back(c);
+							return;
+						}
+						break;
+				}	
+				if (move >= 0 && move != 6){
 					addCaseMenu_show(y, c);
 					Cursor::set(0, 0);
 				}
-				if (std::cin) std::cin.clear();
 			} while (move != -2);
 		}
 		void showSortedMenu_show(int cursor_pos) {

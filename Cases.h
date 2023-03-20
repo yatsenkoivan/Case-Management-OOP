@@ -5,6 +5,7 @@
 #include <iostream>
 #include <windows.h>
 #include <conio.h>
+#include <algorithm>
 
 namespace Cursor {
 	//char symbol = char(219);
@@ -60,6 +61,19 @@ class Time {
 		friend void operator>>(std::istream& in, Time& time) {
 			in >> time.hours >> time.minutes >> time.seconds;
 		}
+		bool operator<(const Time& t) {
+			if (hours > t.hours) return false;
+			if (hours < t.hours) return true;
+			else {
+				if (minutes > t.minutes) return false;
+				if (minutes < t.minutes) return true;
+				else {
+					if (seconds > t.seconds) return false;
+					if (seconds < t.seconds) return true;
+					else return false;
+				}
+			}
+		}
 		void setHours(int hh) {
 			hours = hh;
 		}
@@ -86,6 +100,24 @@ class Date {
 		}
 		friend void operator>>(std::istream& in, Date& date) {
 			in >> date.dd >> date.mm >> date.yy;
+		}
+		bool operator==(const Date& d) {
+			return (yy == d.yy
+				&& mm == d.mm
+				&& dd == d.dd);
+		}
+		bool operator<(const Date& d) {
+			if (yy > d.yy) return false;
+			if (yy < d.yy) return true;
+			else {
+				if (mm > d.mm) return false;
+				if (mm < d.mm) return true;
+				else {
+					if (dd > d.dd) return false;
+					if (dd < d.dd) return true;
+					else return false;
+				}
+			}
 		}
 		void setDD(int dd) {
 			this->dd = dd;
@@ -119,6 +151,15 @@ class Case {
 			in >> c.priority;
 			in >> c.date;
 			in >> c.time;
+		}
+		void show() {
+			std::cout << "Name:\t\t\t" << name << std::endl;
+			std::cout << "Description:\t\t" << description << std::endl;
+			std::cout << "Priority:\t\t" << priority << std::endl;
+			std::cout << "Date:\t\t\t" << date << std::endl;
+			std::cout << "Time:\t\t\t" << time << std::endl;
+			std::cout << "~Tag\t\t\t" << tag << std::endl;
+			std::cout << "--------------------------------------------------\n";
 		}
 		std::string getTag() const {
 			return tag;
@@ -289,8 +330,53 @@ class Manager {
 				if (std::cin) std::cin.clear();
 			} while (move != -2);
 		}
-		void showMenuSorted_show() {
+		void showSortedMenu_show(int cursor_pos) {
+			system("cls");
+			Cursor::set(16, 8);
+			std::cout << "Show Sorted";
+			Cursor::set(18, 10 + cursor_pos);
+			std::cout << Cursor::symbol << ' ';
+			Cursor::set(20, 10);
+			std::cout << "By name";
+			Cursor::set(20, 11);
+			std::cout << "By priority";
+			Cursor::set(20, 12);
+			std::cout << "By date and time";
+			Cursor::set(20, 14);
+			std::cout << "B - to return";
+			Cursor::set(0, 0);
+		}
+		void showSortedMenu() {
+			system("cls");
+			int y=0;
+			showSortedMenu_show(0);
 
+			std::vector<Case> res = cases;
+
+			int move=0;
+			do {
+				move = Cursor::move(y, 2);
+				switch (move) {
+					case 0:
+						std::sort(res.begin(), res.end(), [](const Case& a, const Case& b) { return a.getName() < b.getName(); });
+						break;
+					case 1:
+						sort(res.begin(), res.end(), [](const Case& a, const Case& b) { return a.getPrior() < b.getPrior(); });
+						break;
+					case 2:
+						sort(res.begin(), res.end(), [](const Case& a, const Case& b) {
+							if (a.getDate() == b.getDate()) return a.getTime() < b.getTime();
+							else return a.getDate() < b.getDate();
+							});
+						break;
+				}
+				if (move >= 0) {
+					system("cls");
+					for (Case& c : res) c.show();
+					system("pause");
+					showSortedMenu_show(y);
+				}
+			} while (move != -2);
 		}
 		void showMenu_show(int cursor_pos) {
 			system("cls");
@@ -307,7 +393,7 @@ class Manager {
 			Cursor::set(0, 0);
 		}
 		void showMenu() {
-			int move;
+			int move=0;
 
 			int y = 0;
 			showMenu_show(y);
@@ -319,10 +405,11 @@ class Manager {
 						show();
 						break;
 					case 1:
-						//showSortedMenu();
+						showSortedMenu();
 						break;
 				}
-			} while (move == -1);
+				if (move >= 0) showMenu_show(y);
+			} while (move != -2);
 		}
 		void changeColorMenu_show(int cursor_pos) {
 			system("cls");
@@ -348,7 +435,7 @@ class Manager {
 			data << bg_color << "\t" << fg_color << std::endl;
 		}
 		void changeColor() {
-			int move;
+			int move=0;
 			int y = 0;
 			changeColorMenu_show(y);
 
@@ -453,13 +540,7 @@ class Manager {
 		void show() {
 			system("cls");
 			for (Case& c : cases) {	
-				std::cout << "Name:\t\t\t" << c.getName() << std::endl;
-				std::cout << "Description:\t\t" << c.getDesc() << std::endl;
-				std::cout << "Priority:\t\t" << c.getPrior() << std::endl;
-				std::cout << "Date:\t\t\t" << c.getDate() << std::endl;
-				std::cout << "Time:\t\t\t" << c.getTime() << std::endl;
-				std::cout << "~Tag\t\t\t" << c.getTag() << std::endl;
-				std::cout << "--------------------------------------------------\n";
+				c.show();
 			}
 			system("pause");
 		}

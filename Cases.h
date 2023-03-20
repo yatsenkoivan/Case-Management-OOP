@@ -46,19 +46,26 @@ namespace Cursor {
 }
 
 namespace Errors {
+	int x = 18; //error coord_x
+	int y = 20; //error coord_y
 	void name_empty() {
-		Cursor::set(18, 20);
+		Cursor::set(x, y);
 		std::cout << "! Name cannot be empty !";
 		Cursor::set(0, 0);
 	}
 	void tag_empty() {
-		Cursor::set(18, 20);
+		Cursor::set(x, y);
 		std::cout << "! Tag cannot be empty !";
 		Cursor::set(0, 0);
 	}
 	void tag_not_unique() {
-		Cursor::set(18, 20);
+		Cursor::set(x, y);
 		std::cout << "! Tag must be unique !";
+		Cursor::set(0, 0);
+	}
+	void tag_not_found() {
+		Cursor::set(x, y);
+		std::cout << "! Tag not found !";
 		Cursor::set(0, 0);
 	}
 }
@@ -227,52 +234,6 @@ class Manager {
 	public:
 		Manager() : Manager('7', '0') {}
 		Manager(char bg, char fg) : bg_color{ bg }, fg_color{ fg } {}
-		void menu_show(int cursor_pos) {
-			system("cls");
-			Cursor::set(16, 8);
-			std::cout << "Menu";
-			Cursor::set(18, 10 + cursor_pos);
-			std::cout << Cursor::symbol << ' ';
-			Cursor::set(20, 10);
-			std::cout << "Show cases";
-			Cursor::set(20, 11);
-			std::cout << "Add case";
-			Cursor::set(20, 12);
-			std::cout << "Delete case";
-			Cursor::set(20, 13);
-			std::cout << "Search case";
-			Cursor::set(20, 14);
-			std::cout << "Edit case";
-			Cursor::set(20, 15);
-			std::cout << "Change color";
-			Cursor::set(20, 16);
-			std::cout << "Exit";
-			Cursor::set(0, 0);
-		}
-		void addCaseMenu_show(int cursor_pos, Case& c) {
-			system("cls");
-			Cursor::set(16, 8);
-			std::cout << "Add Case";
-			Cursor::set(18, 10 + cursor_pos);
-			std::cout << Cursor::symbol << ' ';
-			Cursor::set(20, 10);
-			std::cout << "Name:\t\t" << c.getName();
-			Cursor::set(20, 11);
-			std::cout << "Description:\t" << c.getDesc();
-			Cursor::set(20, 12);
-			std::cout << "Priority:\t\t" << c.getPrior();
-			Cursor::set(20, 13);
-			std::cout << "Date:\t\t" << c.getDate();
-			Cursor::set(20, 14);
-			std::cout << "Time:\t\t" << c.getTime();
-			Cursor::set(20, 15);
-			std::cout << "Tag:\t\t" << c.getTag();
-			Cursor::set(20, 16);
-			std::cout << "Submit";
-			Cursor::set(20, 18);
-			std::cout << "B - to return";
-			Cursor::set(0, 0);
-		}
 		Case* findByTag(std::string tag) {
 			auto res = find_if(cases.begin(), cases.end(), [tag](const Case& c) { return c.getTag() == tag; });
 			if (res != cases.end()) return &(*res);
@@ -286,7 +247,7 @@ class Manager {
 			Date d;
 
 			int y = 0;
-			addCaseMenu_show(0, c);
+			editCaseMenu_show(0, c);
 
 			int move=0;
 			std::string temp;
@@ -349,8 +310,7 @@ class Manager {
 						break;
 				}	
 				if (move >= 0 && move != 6){
-					addCaseMenu_show(y, c);
-					Cursor::set(0, 0);
+					editCaseMenu_show(y, c);
 				}
 			} while (move != -2);
 		}
@@ -435,6 +395,150 @@ class Manager {
 				if (move >= 0) showMenu_show(y);
 			} while (move != -2);
 		}
+		void editCaseMenu_show(int cursor_pos, const Case& c) {
+			system("cls");
+			Cursor::set(18, 10 + cursor_pos);
+			std::cout << Cursor::symbol << ' ';
+			Cursor::set(20, 10);
+			std::cout << "Name:\t\t" << c.getName();
+			Cursor::set(20, 11);
+			std::cout << "Description:\t" << c.getDesc();
+			Cursor::set(20, 12);
+			std::cout << "Priority:\t\t" << c.getPrior();
+			Cursor::set(20, 13);
+			std::cout << "Date:\t\t" << c.getDate();
+			Cursor::set(20, 14);
+			std::cout << "Time:\t\t" << c.getTime();
+			Cursor::set(20, 15);
+			std::cout << "Tag:\t\t" << c.getTag();
+			Cursor::set(20, 16);
+			std::cout << "Submit";
+			Cursor::set(20, 18);
+			std::cout << "B - to return";
+			Cursor::set(0, 0);
+		}
+		void editCaseMenu(Case& c) {
+			system("cls");
+
+			Case new_case(c);
+
+			int y = 0;
+			editCaseMenu_show(0, c);
+
+			Date d = c.getDate();
+			Time t = c.getTime();
+
+			int move = 0;
+			std::string temp;
+			int temp_int;
+			do {
+				move = Cursor::move(y, 6);
+				switch (move) {
+				case 0:
+					Cursor::set(40, 10 + y);
+					std::cin >> temp;
+					new_case.setName(temp);
+					break;
+				case 1:
+					Cursor::set(40, 10 + y);
+					getline(std::cin, temp);
+					new_case.setDesc(temp);
+					break;
+				case 2:
+					Cursor::set(40, 10 + y);
+					std::cin >> temp_int;
+					new_case.setPrior(temp_int);
+					break;
+				case 3:
+					Cursor::set(40, 10 + y);
+					std::cin >> temp_int;
+					d.setDD(temp_int);
+					Cursor::set(48, 10 + y);
+					std::cin >> temp_int;
+					d.setMM(temp_int);
+					Cursor::set(56, 10 + y);
+					std::cin >> temp_int;
+					d.setYY(temp_int);
+					new_case.setDate(d);
+					break;
+				case 4:
+					Cursor::set(40, 10 + y);
+					std::cin >> temp_int;
+					t.setHours(temp_int);
+					Cursor::set(48, 10 + y);
+					std::cin >> temp_int;
+					t.setMinutes(temp_int);
+					Cursor::set(56, 10 + y);
+					std::cin >> temp_int;
+					t.setSeconds(temp_int);
+					new_case.setTime(t);
+					break;
+				case 5:
+					Cursor::set(40, 10 + y);
+					std::cin >> temp;
+					new_case.setTag(temp);
+					break;
+				case 6:
+					if (new_case.getName() == "") Errors::name_empty();
+					else if (new_case.getTag() == "") Errors::tag_empty();
+					else if (findByTag(new_case.getTag()) != nullptr) Errors::tag_not_unique();
+					else{
+						c = new_case;
+						save();
+						return;
+					}
+					break;
+				}
+				if (move >= 0 && move != 6) {
+					editCaseMenu_show(y, new_case);
+					Cursor::set(0, 0);
+				}
+			} while (move != -2);
+		}
+		void editCaseSearch_show(int cursor_pos, std::string tag="") {
+			system("cls");
+			Cursor::set(16, 8);
+			std::cout << "Edit case";
+			Cursor::set(18, 10 + cursor_pos);
+			std::cout << Cursor::symbol << ' ';
+			Cursor::set(20, 10);
+			std::cout << "Enter tag:\t" << tag;
+			Cursor::set(20, 11);
+			std::cout << "Sumbit";
+			Cursor::set(20, 13);
+			std::cout << "B - to return";
+			Cursor::set(0, 0);
+		}
+		void editCaseSearch() {
+			int move = 0;
+			int y = 0;
+			editCaseSearch_show(0);
+
+			std::string tag = "";
+			Case* c; //case to edit;
+			do {
+				move = Cursor::move(y, 1);
+				switch (move) {
+					case 0:
+						Cursor::set(32, 10 + y);
+						std::cin >> tag;
+						Cursor::set(0, 0);
+						break;
+					case 1:
+						if (tag == "") Errors::tag_empty;
+						else if (findByTag(tag) == nullptr) Errors::tag_not_found();
+						else {
+							c = findByTag(tag);
+							if (c) editCaseMenu(*c);
+							return;
+						}
+				}
+				if (move >= 0 && move != 1) {
+					editCaseSearch_show(y, tag);
+				}
+
+			} while (move != -2);
+		}
 		void changeColorMenu_show(int cursor_pos) {
 			system("cls");
 			Cursor::set(16, 8);
@@ -490,6 +594,28 @@ class Manager {
 
 			} while (move != -2);
 		}
+		void menu_show(int cursor_pos) {
+			system("cls");
+			Cursor::set(16, 8);
+			std::cout << "Menu";
+			Cursor::set(18, 10 + cursor_pos);
+			std::cout << Cursor::symbol << ' ';
+			Cursor::set(20, 10);
+			std::cout << "Show cases";
+			Cursor::set(20, 11);
+			std::cout << "Add case";
+			Cursor::set(20, 12);
+			std::cout << "Delete case";
+			Cursor::set(20, 13);
+			std::cout << "Search case";
+			Cursor::set(20, 14);
+			std::cout << "Edit case";
+			Cursor::set(20, 15);
+			std::cout << "Change color";
+			Cursor::set(20, 16);
+			std::cout << "Exit";
+			Cursor::set(0, 0);
+		}
 		void menu() {
 
 			setColor();
@@ -510,13 +636,13 @@ class Manager {
 						save();
 						break;
 					case 2:
-
+						//delete
 						break;
 					case 3:
-
+						//search
 						break;
 					case 4:
-
+						editCaseSearch();
 						break;
 					case 5:
 						changeColor();

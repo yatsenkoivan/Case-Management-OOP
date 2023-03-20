@@ -56,6 +56,11 @@ namespace Errors {
 		std::cout << "! Tag cannot be empty !";
 		Cursor::set(0, 0);
 	}
+	void tag_not_unique() {
+		Cursor::set(18, 20);
+		std::cout << "! Tag must be unique !";
+		Cursor::set(0, 0);
+	}
 }
 
 
@@ -268,6 +273,11 @@ class Manager {
 			std::cout << "B - to return";
 			Cursor::set(0, 0);
 		}
+		Case* findByTag(std::string tag) {
+			auto res = find_if(cases.begin(), cases.end(), [tag](const Case& c) { return c.getTag() == tag; });
+			if (res != cases.end()) return &(*res);
+			else return nullptr;
+		}
 		void addCase() {
 			system("cls");
 
@@ -331,6 +341,7 @@ class Manager {
 					case 6:
 						if (c.getName() == "") Errors::name_empty();
 						else if (c.getTag() == "") Errors::tag_empty();
+						else if (findByTag(c.getTag()) != nullptr) Errors::tag_not_unique();
 						else {
 							cases.push_back(c);
 							return;
@@ -374,7 +385,7 @@ class Manager {
 						std::sort(res.begin(), res.end(), [](const Case& a, const Case& b) { return a.getName() < b.getName(); });
 						break;
 					case 1:
-						sort(res.begin(), res.end(), [](const Case& a, const Case& b) { return a.getPrior() < b.getPrior(); });
+						sort(res.begin(), res.end(), [](const Case& a, const Case& b) { return a.getPrior() > b.getPrior(); });
 						break;
 					case 2:
 						sort(res.begin(), res.end(), [](const Case& a, const Case& b) {

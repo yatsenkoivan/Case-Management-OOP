@@ -9,7 +9,8 @@
 
 namespace Cursor {
 	//char symbol = char(219);
-	char symbol = '>';
+	//char symbol = '>';
+	char symbol = char(254);
 	void set(short x, short y) {
 		const HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
 		SetConsoleCursorPosition(h, { x,y });
@@ -28,16 +29,20 @@ namespace Cursor {
 		switch (choice) {
 			case 'w':
 			case 'W':
+			case 72: //up_arrow
 				if (y > 0) x = -1;
 				break;
 			case 's':
 			case 'S':
+			case 80: //down_arrow
 				if (y < max) x = 1;
 				break;
 			case ' ':
+			case 13: //enter
 				return y;
 			case 'b':
 			case 'B':
+			case 27: //esc
 				return -2;
 		}
 		Cursor::reshow(y, x);

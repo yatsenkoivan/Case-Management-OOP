@@ -35,7 +35,7 @@ namespace Cursor {
 			case 's':
 			case 'S':
 			case 80: //down_arrow
-				if (y < max-1) x = 1;
+				if (y < max - 1) x = 1;
 				break;
 			case ' ':
 			case 13: //enter
@@ -197,14 +197,14 @@ class Case {
 		Time time;
 	public:
 		Case(std::string tag, std::string name, std::string description, int priority, Date date, Time time) :
-			tag{tag}, name {name}, description{ description }, priority{ priority }, date{ date }, time{ time } {}
-		Case() : Case("", "", "", 0, Date(), Time() ) {}
+			tag{ tag }, name{ name }, description{ description }, priority{ priority }, date{ date }, time{ time } {}
+		Case() : Case("", "", "", 0, Date(), Time()) {}
 		friend void operator>>(std::istream& in, Case& c) {
 			in >> c.tag;
 			in >> c.name;
 			in.ignore();
 			getline(in, c.description);
-			
+
 			in >> c.priority;
 			in >> c.date;
 			in >> c.time;
@@ -265,10 +265,9 @@ class Manager {
 	public:
 		Manager() : Manager('7', '0') {}
 		Manager(char bg, char fg) : bg_color{ bg }, fg_color{ fg } {}
-		Case* findByTag(std::string tag) {
+		std::vector<Case>::iterator findByTag(std::string tag) {
 			auto res = find_if(cases.begin(), cases.end(), [tag](const Case& c) { return c.getTag() == tag; });
-			if (res != cases.end()) return &(*res);
-			else return nullptr;
+			return res;
 		}
 		void addCase() {
 
@@ -284,27 +283,27 @@ class Manager {
 			int cursor_y = 0;
 			std::string title = "Show sorted";
 			std::vector<std::string> choices
-			{ "By name", "By priority", "By date and time"};
+			{ "By name", "By priority", "By date and time" };
 			menu_show(title, choices, cursor_y);
 
 			std::vector<Case> res = cases;
 
-			int move=0;
+			int move = 0;
 			do {
 				move = Cursor::move(cursor_y, choices.size());
 				switch (move) {
-					case 0:
-						std::sort(res.begin(), res.end(), [](const Case& a, const Case& b) { return a.getName() < b.getName(); });
-						break;
-					case 1:
-						sort(res.begin(), res.end(), [](const Case& a, const Case& b) { return a.getPrior() > b.getPrior(); });
-						break;
-					case 2:
-						sort(res.begin(), res.end(), [](const Case& a, const Case& b) {
-							if (a.getDate() == b.getDate()) return a.getTime() < b.getTime();
-							else return a.getDate() < b.getDate();
-							});
-						break;
+				case 0:
+					std::sort(res.begin(), res.end(), [](const Case& a, const Case& b) { return a.getName() < b.getName(); });
+					break;
+				case 1:
+					sort(res.begin(), res.end(), [](const Case& a, const Case& b) { return a.getPrior() > b.getPrior(); });
+					break;
+				case 2:
+					sort(res.begin(), res.end(), [](const Case& a, const Case& b) {
+						if (a.getDate() == b.getDate()) return a.getTime() < b.getTime();
+						else return a.getDate() < b.getDate();
+						});
+					break;
 				}
 				if (move >= 0) {
 					system("cls");
@@ -315,7 +314,7 @@ class Manager {
 			} while (move != -2);
 		}
 		void showMenu() {
-			int move=0;
+			int move = 0;
 
 			int cursor_y = 0;
 			std::string title = "Show";
@@ -326,12 +325,12 @@ class Manager {
 			do {
 				move = Cursor::move(cursor_y, choices.size());
 				switch (move) {
-					case 0:
-						show();
-						break;
-					case 1:
-						showSortedMenu();
-						break;
+				case 0:
+					show();
+					break;
+				case 1:
+					showSortedMenu();
+					break;
 				}
 				if (move >= 0) menu_show(title, choices, cursor_y);
 			} while (move != -2);
@@ -439,7 +438,7 @@ class Manager {
 				case 6:
 					if (new_case.getName() == "") Errors::name_empty();
 					else if (new_case.getTag() == "") Errors::tag_empty();
-					else if (findByTag(new_case.getTag()) != nullptr) Errors::tag_not_unique();
+					else if (findByTag(new_case.getTag()) != cases.end()) Errors::tag_not_unique();
 					else if
 						((d.getYY() == 0 || d.getMM() == 0 || d.getDD() == 0)
 							||
@@ -448,7 +447,7 @@ class Manager {
 						(d.getDD() > Months::arr[d.getMM()]) Errors::invalid_date(); //incorrect days
 					else if
 						(d.getMM() != 2 && d.getDD() == 29) Errors::invalid_date(); //feb_29
-					else{
+					else {
 						c = new_case;
 						return true;
 					}
@@ -464,16 +463,16 @@ class Manager {
 		void searchTag_menu(int cursor_y, std::string tag) {
 			system("cls");
 			Cursor::set(16, 8);
-			std::cout << "Edit case\n";
+			std::cout << "Search case\n";
 			Cursor::set(18, 10 + cursor_y);
 			std::cout << Cursor::symbol;
 			Cursor::set(20, 10);
 			std::cout << "Tag:\t" << tag;
 			Cursor::set(20, 11);
 			std::cout << "Submit";
-			Cursor::set(0,0);
+			Cursor::set(0, 0);
 		}
-		Case* searchTag() {
+		std::vector<Case>::iterator searchTag() {
 			system("cls");
 			int move = 0;
 			int cursor_y = 0;
@@ -481,7 +480,7 @@ class Manager {
 			std::string tag = "";
 			searchTag_menu(cursor_y, tag);
 
-			Case* c;
+			std::vector<Case>::iterator c;
 			do {
 				move = Cursor::move(cursor_y, 2);
 				switch (move) {
@@ -493,10 +492,12 @@ class Manager {
 					break;
 				case 1:
 					if (tag == "") Errors::tag_empty();
-					else if (findByTag(tag) == nullptr) Errors::tag_not_found();
 					else {
 						c = findByTag(tag);
-						if (c) return c;
+						if (c == cases.end()) Errors::tag_not_found();
+						else {
+							return c;
+						}
 					}
 				}
 				if (move >= 0 && move != 1) {
@@ -504,20 +505,26 @@ class Manager {
 				}
 
 			} while (move != -2);
-			return nullptr;
+			return cases.end();
 		}
 		void editCaseSearch() {
-			Case* c = searchTag();
-			if (c) {
+			std::vector<Case>::iterator c = searchTag();
+			if (c != cases.end()) {
 				Case new_case(*c);
 				std::string tag = c->getTag();
 				c->setTag(""); //tag_unique bug
-				if (editCase(new_case)){
+				if (editCase(new_case)) {
 					*c = new_case;
 					save();
 				}
 				else
 					c->setTag(tag);
+			}
+		}
+		void delCaseSearch() {
+			std::vector<Case>::iterator c = searchTag();
+			if (c != cases.end()) {
+				cases.erase(c);
 			}
 		}
 		void setColor() {
@@ -530,7 +537,7 @@ class Manager {
 			data << bg_color << "\t" << fg_color << std::endl;
 		}
 		void changeColor() {
-			int move=0;
+			int move = 0;
 
 			int cursor_y = 0;
 			std::string title = "Change color";
@@ -543,14 +550,14 @@ class Manager {
 				move = Cursor::move(cursor_y, choices.size());
 
 				switch (move) {
-					case 0:
-						bg_color++;
-						break;
-					case 1:
-						fg_color++;
-						break;
-					case 2:
-						return;
+				case 0:
+					bg_color++;
+					break;
+				case 1:
+					fg_color++;
+					break;
+				case 2:
+					return;
 				}
 
 				if (bg_color == '9' + 1) bg_color = 'a';
@@ -580,7 +587,7 @@ class Manager {
 				std::cout << choice;
 				y++;
 			}
-			Cursor::set(0,0);
+			Cursor::set(0, 0);
 		}
 		void menu() {
 
@@ -590,7 +597,7 @@ class Manager {
 
 			std::string title = "Menu";
 			std::vector<std::string> choices
-				{ "Show", "Add case", "Delete case", "Search case", "Edit case", "Change color", "Exit" };
+			{ "Show", "Add case", "Delete case", "Search case", "Edit case", "Change color", "Exit" };
 
 
 			menu_show(title, choices, cursor_y);
@@ -599,27 +606,27 @@ class Manager {
 			while (true) {
 				move = Cursor::move(cursor_y, choices.size());
 				switch (move) {
-					case 0:
-						showMenu();
-						break;
-					case 1:
-						addCase();
-						save();
-						break;
-					case 2:
-						//delete
-						break;
-					case 3:
-						//search
-						break;
-					case 4:
-						editCaseSearch();
-						break;
-					case 5:
-						changeColor();
-						break;
-					case 6:
-						return;
+				case 0:
+					showMenu();
+					break;
+				case 1:
+					addCase();
+					save();
+					break;
+				case 2:
+					delCaseSearch();
+					break;
+				case 3:
+					//search
+					break;
+				case 4:
+					editCaseSearch();
+					break;
+				case 5:
+					changeColor();
+					break;
+				case 6:
+					return;
 				}
 				if (move >= 0) menu_show(title, choices, cursor_y);
 			}
@@ -660,7 +667,7 @@ class Manager {
 		}
 		void show() {
 			system("cls");
-			for (Case& c : cases) {	
+			for (Case& c : cases) {
 				c.show();
 			}
 			system("pause");

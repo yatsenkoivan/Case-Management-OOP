@@ -272,10 +272,9 @@ class Manager {
 		void addCase() {
 
 			Case c;
-			editCase(c, "Add case");
+			if (editCase(c, "Add case") == false) return;
 
 			cases.push_back(c);
-			return;
 		}
 		void showSortedMenu() {
 			system("cls");

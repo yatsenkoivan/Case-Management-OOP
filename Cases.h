@@ -86,12 +86,12 @@ namespace Months {
 
 class Time {
 	private:
-		uint16_t hours;
-		uint16_t minutes;
-		uint16_t seconds;
+		int16_t hours;
+		int16_t minutes;
+		int16_t seconds;
 	public:
 		Time() : Time(0, 0, 0) {}
-		Time(uint16_t hh, uint16_t mm, uint16_t ss) :
+		Time(int16_t hh, int16_t mm, int16_t ss) :
 			hours{ hh }, minutes{ mm }, seconds{ ss } {}
 		friend std::ostream& operator<<(std::ostream& out, Time time) {
 			out << time.hours << "\t" << time.minutes << "\t" << time.seconds;
@@ -122,24 +122,24 @@ class Time {
 		void setSeconds(uint16_t ss) {
 			seconds = ss;
 		}
-		uint16_t getHours() const {
+		int16_t getHours() const {
 			return hours;
 		}
-		uint16_t getMinutes() const {
+		int16_t getMinutes() const {
 			return minutes;
 		}
-		uint16_t getSeconds() const {
+		int16_t getSeconds() const {
 			return seconds;
 		}
 };
 
 class Date {
 	private:
-		uint32_t yy; //year
-		uint16_t mm; //month
-		uint16_t dd; //day
+		int32_t yy; //year
+		int16_t mm; //month
+		int16_t dd; //day
 	public:
-		Date(uint16_t yy, uint16_t mm, uint16_t dd) :
+		Date(int16_t yy, int16_t mm, int16_t dd) :
 			yy{ yy }, mm{ mm }, dd{ dd } {}
 		Date() : Date(0, 0, 0) {}
 		friend std::ostream& operator<<(std::ostream& out, Date date) {
@@ -167,22 +167,22 @@ class Date {
 				}
 			}
 		}
-		void setDD(uint16_t dd) {
+		void setDD(int16_t dd) {
 			this->dd = dd;
 		}
-		void setMM(uint16_t mm) {
+		void setMM(int16_t mm) {
 			this->mm = mm;
 		}
-		void setYY(uint32_t yy) {
+		void setYY(int32_t yy) {
 			this->yy = yy;
 		}
-		uint32_t getDD() const {
+		int32_t getDD() const {
 			return dd;
 		}
-		uint16_t getMM() const {
+		int16_t getMM() const {
 			return mm;
 		}
-		uint32_t getYY() const {
+		int32_t getYY() const {
 			return yy;
 		}
 };
@@ -215,7 +215,7 @@ class Case {
 			std::cout << "Priority:\t\t" << priority << std::endl;
 			std::cout << "Date:\t\t\t" << date << std::endl;
 			std::cout << "Time:\t\t\t" << time << std::endl;
-			std::cout << "~Tag\t\t\t" << tag << std::endl;
+			std::cout << "Tag\t\t\t" << tag << std::endl;
 			std::cout << "--------------------------------------------------\n";
 		}
 		std::string getTag() const {
@@ -272,7 +272,7 @@ class Manager {
 		void addCase() {
 
 			Case c;
-			editCase(c);
+			editCase(c, "Add case");
 
 			cases.push_back(c);
 			return;
@@ -335,10 +335,10 @@ class Manager {
 				if (move >= 0) menu_show(title, choices, cursor_y);
 			} while (move != -2);
 		}
-		void editCase_menu(int cursor_pos, const Case& c) {
+		void editCase_menu(int cursor_pos, const Case& c, std::string title) {
 			system("cls");
 			Cursor::set(16, 8);
-			std::cout << "Edit case";
+			std::cout << title;
 			Cursor::set(18, 10 + cursor_pos);
 			std::cout << Cursor::symbol << ' ';
 			Cursor::set(20, 10);
@@ -354,16 +354,18 @@ class Manager {
 			Cursor::set(20, 15);
 			std::cout << "Tag:\t\t" << c.getTag();
 			Cursor::set(20, 16);
+			std::cout << "Reset";
+			Cursor::set(20, 17);
 			std::cout << "Submit";
 			Cursor::set(0, 0);
 		}
-		bool editCase(Case& c) {
+		bool editCase(Case& c, std::string title) {
 			system("cls");
 
 			Case new_case(c);
 
 			int cursor_y = 0;
-			editCase_menu(cursor_y, new_case);
+			editCase_menu(cursor_y, new_case, title);
 
 			Date d = c.getDate();
 			Time t = c.getTime();
@@ -372,7 +374,137 @@ class Manager {
 			std::string temp;
 			int temp_int;
 			do {
-				move = Cursor::move(cursor_y, 7);
+				move = Cursor::move(cursor_y, 8);
+				switch (move) {
+				case 0:
+					Cursor::set(38, 10 + cursor_y);
+					std::cout << "> ";
+					std::cin >> temp;
+					new_case.setName(temp);
+					break;
+				case 1:
+					Cursor::set(38, 10 + cursor_y);
+					std::cout << "> ";
+					getline(std::cin, temp);
+					new_case.setDesc(temp);
+					break;
+				case 2:
+					Cursor::set(38, 10 + cursor_y);
+					std::cout << "> ";
+					std::cin >> temp_int;
+					new_case.setPrior(abs(temp_int));
+					break;
+				case 3:
+					Cursor::set(38, 10 + cursor_y);
+					std::cout << "> ";
+					std::cin >> temp_int;
+					d.setDD(abs(temp_int));
+					Cursor::set(46, 10 + cursor_y);
+					std::cout << "> ";
+					std::cin >> temp_int;
+					d.setMM(abs(temp_int));
+					Cursor::set(54, 10 + cursor_y);
+					std::cout << "> ";
+					std::cin >> temp_int;
+					d.setYY(abs(temp_int));
+					new_case.setDate(d);
+					break;
+				case 4:
+					Cursor::set(38, 10 + cursor_y);
+					std::cout << "> ";
+					std::cin >> temp_int;
+					t.setHours(abs(temp_int));
+					Cursor::set(46, 10 + cursor_y);
+					std::cout << "> ";
+					std::cin >> temp_int;
+					t.setMinutes(abs(temp_int));
+					Cursor::set(54, 10 + cursor_y);
+					std::cout << "> ";
+					std::cin >> temp_int;
+					t.setSeconds(abs(temp_int));
+
+					t.setMinutes(t.getMinutes() + t.getSeconds() / 60);
+					t.setSeconds(t.getSeconds() % 60);
+					t.setHours(t.getHours() + t.getMinutes() / 60);
+					t.setMinutes(t.getMinutes() % 60);
+					t.setHours(t.getHours() % 24);
+
+					new_case.setTime(t);
+					break;
+				case 5:
+					Cursor::set(38, 10 + cursor_y);
+					std::cout << "> ";
+					std::cin >> temp;
+					new_case.setTag(temp);
+					break;
+				case 6:
+					new_case = c;
+					break;
+				case 7:
+					if (new_case.getName() == "") Errors::name_empty();
+					else if (new_case.getTag() == "") Errors::tag_empty();
+					else if (findByTag(new_case.getTag()) != cases.end()) Errors::tag_not_unique();
+					else if
+						((d.getYY() == 0 || d.getMM() == 0 || d.getDD() == 0)
+							||
+							(d.getMM() > 12 || d.getDD() > 31)) Errors::invalid_date();
+					else if
+						(d.getDD() > Months::arr[d.getMM()]) Errors::invalid_date(); //incorrect days
+					else if
+						(d.getMM() != 2 && d.getDD() == 29) Errors::invalid_date(); //feb_29
+					else {
+						c = new_case;
+						return true;
+					}
+					break;
+				}
+				if (move >= 0 && move != 7) {
+					editCase_menu(cursor_y, new_case, title);
+					Cursor::set(0, 0);
+				}
+			} while (move != -2);
+			return false;
+		}
+		void searchCase_menu(int cursor_pos, Case& c) {
+			system("cls");
+			Cursor::set(16, 8);
+			std::cout << "Search case";
+			Cursor::set(18, 10 + cursor_pos);
+			std::cout << Cursor::symbol << ' ';
+			Cursor::set(20, 10);
+			std::cout << "Name:\t\t" << c.getName();
+			Cursor::set(20, 11);
+			std::cout << "Description:\t" << c.getDesc();
+			Cursor::set(20, 12);
+			std::cout << "Priority:\t\t" << c.getPrior();
+			Cursor::set(20, 13);
+			std::cout << "Date:\t\t" << c.getDate();
+			Cursor::set(20, 14);
+			std::cout << "Time:\t\t" << c.getTime();
+			Cursor::set(20, 15);
+			std::cout << "Reset";
+			Cursor::set(20, 16);
+			std::cout << "Submit";
+			Cursor::set(20, 18);
+			std::cout << "Note: -1 equals no settings";
+			Cursor::set(0, 0);
+		}
+		bool searchCase(Case& c) {
+			system("cls");
+
+			Case new_case(c);
+
+			int cursor_y = 0;
+			searchCase_menu(cursor_y, new_case);
+
+			Date d = c.getDate();
+			Time t = c.getTime();
+
+			int move = 0;
+			std::string temp;
+			int temp_int;
+			do {
+				move = Cursor::move(cursor_y, 8);
 				switch (move) {
 				case 0:
 					Cursor::set(38, 10 + cursor_y);
@@ -430,31 +562,14 @@ class Manager {
 					new_case.setTime(t);
 					break;
 				case 5:
-					Cursor::set(38, 10 + cursor_y);
-					std::cout << "> ";
-					std::cin >> temp;
-					new_case.setTag(temp);
+					new_case = c;
 					break;
 				case 6:
-					if (new_case.getName() == "") Errors::name_empty();
-					else if (new_case.getTag() == "") Errors::tag_empty();
-					else if (findByTag(new_case.getTag()) != cases.end()) Errors::tag_not_unique();
-					else if
-						((d.getYY() == 0 || d.getMM() == 0 || d.getDD() == 0)
-							||
-							(d.getMM() > 12 || d.getDD() > 31)) Errors::invalid_date();
-					else if
-						(d.getDD() > Months::arr[d.getMM()]) Errors::invalid_date(); //incorrect days
-					else if
-						(d.getMM() != 2 && d.getDD() == 29) Errors::invalid_date(); //feb_29
-					else {
-						c = new_case;
-						return true;
-					}
-					break;
+					c = new_case;
+					return true;
 				}
 				if (move >= 0 && move != 6) {
-					editCase_menu(cursor_y, new_case);
+					searchCase_menu(cursor_y, new_case);
 					Cursor::set(0, 0);
 				}
 			} while (move != -2);
@@ -513,7 +628,7 @@ class Manager {
 				Case new_case(*c);
 				std::string tag = c->getTag();
 				c->setTag(""); //tag_unique bug
-				if (editCase(new_case)) {
+				if (editCase(new_case, "Edit case")) {
 					*c = new_case;
 					save();
 				}
@@ -589,6 +704,36 @@ class Manager {
 			}
 			Cursor::set(0, 0);
 		}
+		void searchCase() {
+			Case c;
+			c.setDate({ -1,-1,-1 });
+			c.setTime({ -1,-1,-1 });
+			c.setPrior(-1);
+			if (searchCase(c) == false) return;
+			system("cls");
+			for (auto& i : cases) {
+				if (
+					(c.getName() == i.getName() || c.getName() == "")
+					&&
+					(c.getDesc() == i.getDesc() || c.getDesc() == "")
+					&&
+					(c.getPrior() == i.getPrior() || c.getPrior() == -1)
+					&&
+					(c.getDate().getYY() == i.getDate().getYY() || c.getDate().getYY() == -1)
+					&&
+					(c.getDate().getMM() == i.getDate().getMM() || c.getDate().getMM() == -1)
+					&&
+					(c.getDate().getDD() == i.getDate().getDD() || c.getDate().getDD() == -1)
+					&&
+					(c.getTime().getHours() == i.getTime().getHours() || c.getTime().getHours() == -1)
+					&&
+					(c.getTime().getMinutes() == i.getTime().getMinutes() || c.getTime().getMinutes() == -1)
+					&&
+					(c.getTime().getSeconds() == i.getTime().getSeconds() || c.getTime().getSeconds() == -1)
+					) i.show();
+			}
+			system("pause");
+		}
 		void menu() {
 
 			setColor();
@@ -617,7 +762,7 @@ class Manager {
 					delCaseSearch();
 					break;
 				case 3:
-					//search
+					searchCase();
 					break;
 				case 4:
 					editCaseSearch();
